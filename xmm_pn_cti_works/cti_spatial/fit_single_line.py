@@ -26,10 +26,15 @@ def fit_single_line(events: Table,line_c: float=8040, erange: list=(5500.0,10000
         conf - bool, if confidence interval for the parameters is to be calculated
             
     OUTPUTS:
-        a tuple of the full fit output class and confidence intervals (if asked)
+        a dict with 
+        'nevts' - int, the total number of events used in the fit
+        'chi2_r' - float, the reduced chi-square
+        'line_c - array(2), line_c[0] is the best-fit Gaussian mean, line_c[1] is the error on the Gaussian mean.
+        'line_fwhm' - array(20), line_fwhm[0] is the best-fit Gaussian FWHM, line_fwhm[1] is the error on the Gaussian FWHM.
     
     NOTES:
-        * The Gaussian sigma of the line is only allowed within a certain range: 80 to 250 eV
+        * The Gaussian mean is only allowed to within +/- 100 eV of the initial value,
+            and the sigma of the line is only allowed within a certain range: 30 to 120 eV (FWHM in 70 to 282 eV)
         * The fit is performed with astropy.modeling
         
     '''    
@@ -46,23 +51,24 @@ def fit_single_line(events: Table,line_c: float=8040, erange: list=(5500.0,10000
     nbins_fit = int(delta_e/ebin)
     hist, bin_edges = np.histogram(events[use_column],bins=nbins_fit,range=erange,density=False)
     fmax = hist.max()
+    nevts = np.sum(hist)
     #
     # get the middle of each bin
     xmid = (bin_edges[0:-1] + bin_edges[1:])/2.0
     # exclude the last bin due to some numerical outliers
     xmid = xmid[0:-1]
     hist = hist[0:-1]
-    #
-    # check if fitting will make sense
-    #
-    ix1 = (xmid >= (line_c - 50.0)) & (xmid < (line_c + 50))
-    cnt1 = np.sum(hist[ix1])
-    #
-    ix2 = (xmid <= (emin + 50.0)) | (xmid >= (emax - 50))
-    cnt2 = np.sum(hist[ix2])
-    if (verbose):
-        print (f'Total counts in line: {cnt1}')
-        print (f'Total in continuum: {cnt2}, ratio {cnt1/cnt2:.2f}')
+    # #
+    # # check if fitting will make sense
+    # #
+    # ix1 = (xmid >= (line_c - 50.0)) & (xmid < (line_c + 50))
+    # cnt1 = np.sum(hist[ix1])
+    # #
+    # ix2 = (xmid <= (emin + 50.0)) | (xmid >= (emax - 50))
+    # cnt2 = np.sum(hist[ix2])
+    # if (verbose):
+    #     print (f'Total counts in line: {cnt1}')
+    #     print (f'Total in continuum: {cnt2}, ratio {cnt1/cnt2:.2f}')
     #
     #if (cnt1/cnt2 < 1.2):
     #    print ('Not enough counts in line above the continuum, cannot fit.')
@@ -71,7 +77,7 @@ def fit_single_line(events: Table,line_c: float=8040, erange: list=(5500.0,10000
     cont = models.Polynomial1D(2)
     # Gaussian 1d with some bounds
     g1 = models.Gaussian1D(amplitude=fmax, mean=line_c, stddev=100.0,
-            bounds={'mean': (line_c-100.0, line_c+100.0), 'stddev': (60.0,250.0)})
+            bounds={'mean': (line_c-100.0, line_c+100.0), 'stddev': (30.0,120.0)})
     #
     xmodel = cont + g1
     #
@@ -112,7 +118,7 @@ def fit_single_line(events: Table,line_c: float=8040, erange: list=(5500.0,10000
     else:
         fwhm_err = SIG2FWHM*fitted.stddev_1.std
     #
-    result = {'chisqr_r': chisqr_r, 'line_c': [fitted.mean_1.value,fitted.mean_1.std],
+    result = {'nevts': nevts, 'chisqr_r': chisqr_r, 'line_c': [fitted.mean_1.value,fitted.mean_1.std],
         #'line_sigma': [fitted.stddev_1.value,fitted.stddev_1.std],
         'line_fwhm': [fwhm,fwhm_err]}
     #

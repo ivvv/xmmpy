@@ -19,6 +19,7 @@
 # * 13 Apr 2022: adapted to run for with PI_CORR read from the relevant files
 # * 10 May 2022: added skip option, if to skip already available results
 # * 12 May 2022: adapted to fit Mn Ka line, using the new library of defs
+# * 16 May 2022: added input parameter to select PI or PI_CORR for the fit
 #
 #  
 # %%
@@ -56,6 +57,8 @@ parser.add_argument('start_rev', type=int,
                     help='The first revolution to use')
 parser.add_argument('-stacks_dir', type=str, default='/xdata/xcaldata/XMM/IVAN/sanders/stacks500_0056',
                     help='The folder with stacks')
+parser.add_argument('-use_column', type=str, default='PI_CORR',
+                    help='Which column to use for the fit, can be PI or PI_CORR')
 parser.add_argument('-mode', type=str, default='FF',
                     help='The observation mode to use, can be FF or EFF')
 parser.add_argument('--skip', default=False, action='store_true',
@@ -81,13 +84,23 @@ rstep = 500
 output = np.full((12,64,200),np.nan,dtype=np.single)
 output_err = np.full((12,64,200),np.nan,dtype=np.single)
 output_redchi = np.full((12,64,200),np.nan,dtype=np.single)
+output_nevts = np.full((12,64,200),0,dtype=int)
 #
 xmode = args.mode
 rev0 = args.start_rev
 rev1 = rev0 + rstep - 1
 #
-print (f'*** Doing revolution {rev0:04} to {rev1:04}, fit for Mn Ka')
-savefile = f'{results_dir}/{xmode}_stacked_{rev0:04}_{rev1:04}_mnka_corr.fits.gz'
+if (args.use_column not in ['PI','PI_CORR']):
+    print ('Error! Only PI or PI_CORR can be used for the fit.')
+    raise RuntimeError
+#
+if (args.use_column == 'PI_CORR'):
+    savefile = f'{results_dir}/{xmode}_stacked_{rev0:04}_{rev1:04}_mnka_corr.fits.gz'
+else:
+    savefile = f'{results_dir}/{xmode}_stacked_{rev0:04}_{rev1:04}_mnka.fits.gz'
+#
+print (f'*** Doing revolution {rev0:04} to {rev1:04}, fit for Mn Ka using {args.use_column}')
+#
 if (os.path.isfile(savefile) and args.skip):
     print (f'Results file {savefile} already exists and skip is {args.skip}. Will skip recalculating it again.')
     sys.exit(0)
@@ -101,10 +114,11 @@ for j in np.arange(1,13,1):
         raise FileNotFoundError
     t = Table.read(sfile)
     print ('Doing CCD:',j)
-    ww = run_fit_for_mnka(t,use_column='PI_CORR',verbose=False)
+    ww = run_fit_for_mnka(t,use_column=args.use_column,verbose=False)
     output[j-1,:,:] = ww[0]
     output_err[j-1,:,:] = ww[1]
     output_redchi[j-1,:,:] = ww[2]
+    output_nevts[j-1,:,:] = ww[3]
 #
 # save to a FITS image
 #
@@ -112,13 +126,14 @@ hdu0 = fits.PrimaryHDU()
 hdu1 = fits.ImageHDU(output, name='RESIDUALS')
 hdu2 = fits.ImageHDU(output_err, name='ERRORS')
 hdu3 = fits.ImageHDU(output_redchi, name='CHI2_R')
+hdu4 = fits.ImageHDU(output_nevts, name='NEVENTS')
 
-hdul = fits.HDUList([hdu0,hdu1,hdu2,hdu3])
+hdul = fits.HDUList([hdu0,hdu1,hdu2,hdu3,hdu4])
 hdu0.header['REV0'] = rev0
 hdu0.header['REV1'] = rev1
 hdu0.header['MODE'] = xmode
 hdu0.header['HISTORY'] = f'Created by Ivan V, using fit_mnka_picorr, {date.today()}'
-hdu0.header['COMMENT'] = f'Using events with PI_CORR, corrected for spatial CTI.'
+hdu0.header['COMMENT'] = f'Using events with args.use_column'
 hdul.writeto(savefile,overwrite=True)
 #
 print (f'Results for [{rev0},{rev1}] saved to {savefile}')
