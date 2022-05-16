@@ -29,9 +29,11 @@ import argparse
 from astropy.table import Table
 from astropy.io import fits
 from tqdm import trange
+
 import warnings
 from astropy.utils.exceptions import AstropyWarning
- 
+warnings.simplefilter('ignore',AstropyWarning)
+  
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from datetime import date
@@ -103,7 +105,6 @@ for j in np.arange(1,13,1):
     output[j-1,:,:] = ww[0]
     output_err[j-1,:,:] = ww[1]
     output_redchi[j-1,:,:] = ww[2]
-    break
 #
 # save to a FITS image
 #

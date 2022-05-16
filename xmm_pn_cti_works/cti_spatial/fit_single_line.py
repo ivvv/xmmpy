@@ -69,7 +69,9 @@ def fit_single_line(events: Table,line_c: float=8040, erange: list=(5500.0,10000
     #    return None
     #
     cont = models.Polynomial1D(2)
-    g1 = models.Gaussian1D(amplitude=fmax, mean=line_c, stddev=100.0)
+    # Gaussian 1d with some bounds
+    g1 = models.Gaussian1D(amplitude=fmax, mean=line_c, stddev=100.0,
+            bounds={'mean': (line_c-100.0, line_c+100.0), 'stddev': (60.0,250.0)})
     #
     xmodel = cont + g1
     #

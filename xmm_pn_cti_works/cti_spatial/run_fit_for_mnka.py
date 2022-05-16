@@ -73,8 +73,8 @@ def run_fit_for_mnka(table,bin_size=5.0,eranges=[5500.0,6500.0],use_column='PI',
             else:
                 i0 = jy*20 + 20
                 i1 = i0 + 20
-            yrr[jx,i0:i1] = 1000*(results[jx,jy] - line0)
-            yrr_err[jx,i0:i1] = 1000*results_err[jx,jy]
+            yrr[jx,i0:i1] = (results[jx,jy] - line0)
+            yrr_err[jx,i0:i1] = results_err[jx,jy]
             yrr_redchi[jx,i0:i1] = results_redchi[jx,jy]
     yrr[:,:12] = np.nan
     yrr_err[:,:12] = np.nan
