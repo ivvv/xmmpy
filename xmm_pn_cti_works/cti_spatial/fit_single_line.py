@@ -7,7 +7,7 @@ from astropy.utils.exceptions import AstropyWarning
 warnings.simplefilter('ignore',AstropyWarning)
 
 import matplotlib.pylab as plt
-plt.style.use(['seaborn-colorblind','~/Dropbox/Work/Python/presentation.mplstyle'])
+plt.style.use(['seaborn-colorblind','~/presentation.mplstyle'])
 
 SIG2FWHM = 2.0*np.sqrt(2.0*np.log(2.0))
 

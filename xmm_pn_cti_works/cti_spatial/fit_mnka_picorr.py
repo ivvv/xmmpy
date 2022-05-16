@@ -47,10 +47,6 @@ home = os.path.expanduser('~')
 from run_fit_for_mnka import run_fit_for_mnka
 
 # %%
-home = os.path.expanduser('~')
-
-# %%
-
 # get the arguments
 parser = argparse.ArgumentParser(description='Spatial CTI calculations')
 parser.add_argument('start_rev', type=int,
