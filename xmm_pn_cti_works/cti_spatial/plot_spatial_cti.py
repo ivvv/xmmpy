@@ -156,24 +156,28 @@ def plot_spatial_cti_all(results_file,pngfile=None):
     plt.show()
     return True
 
-# get the arguments
-parser = argparse.ArgumentParser(description='Display spatial CTI offset')
-parser.add_argument('filename', type=str,
-                    help='The FITS filename with the results')
-parser.add_argument('ccdnr', type=int,
-                    help='The CCDNR to use')
-parser.add_argument('-panels', type=str,default='residual',
-                    help='The panels to show: can be residual or all')
-args = parser.parse_args()
-#
-#
-if (not os.path.isfile(args.filename)):
-    print ("Input FITS file not found.")
-    raise FileNotFoundError
-#
-if (args.ccdnr in np.arange(1,13,1)):
-    plot_spatial_cti(args.filename,args.ccdnr,pngfile=None,panels=args.panels)
-else:
-    plot_spatial_cti_all(args.filename,pngfile=None)
+def main():
+    # get the arguments
+    parser = argparse.ArgumentParser(description='Display spatial CTI offset')
+    parser.add_argument('filename', type=str,
+                        help='The FITS filename with the results')
+    parser.add_argument('ccdnr', type=int,
+                        help='The CCDNR to use')
+    parser.add_argument('-panels', type=str,default='residual',
+                        help='The panels to show: can be residual or all')
+    args = parser.parse_args()
+    #
+    #
+    if (not os.path.isfile(args.filename)):
+        print ("Input FITS file not found.")
+        raise FileNotFoundError
+    #
+    if (args.ccdnr in np.arange(1,13,1)):
+        plot_spatial_cti(args.filename,args.ccdnr,pngfile=None,panels=args.panels)
+    else:
+        plot_spatial_cti_all(args.filename,pngfile=None)
+
+if __name__ == "__main__":
+    main()
 
 

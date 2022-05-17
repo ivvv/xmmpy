@@ -92,17 +92,20 @@ def compare_before_after(start_rev,ccdnr=1,mode='FF',pngfile=None, plot_it=True,
     return (xstat0,xstat1)
 
 #%%
-# get the arguments
-parser = argparse.ArgumentParser(description='Display spatial CTI offset')
-parser.add_argument('start_rev', type=int,
-                    help='The starting revolution of the stack to use')
-parser.add_argument('ccdnr', type=int,
-                    help='The CCDNR to use')
-parser.add_argument('-mode', type=str, default='FF',
-                    help='The instrument mode to use, can be FF or EFF')
-parser.add_argument('-res_dir', type=str, default=os.getcwd(),
-                    help='The folder with the results')
-args = parser.parse_args()
-#
-out = compare_before_after(args.start_rev,args.ccdnr,mode=args.mode,res_dir=args.res_dir)
+def main():
+    # get the arguments
+    parser = argparse.ArgumentParser(description='Display spatial CTI offset')
+    parser.add_argument('start_rev', type=int,
+                        help='The starting revolution of the stack to use')
+    parser.add_argument('ccdnr', type=int,
+                        help='The CCDNR to use')
+    parser.add_argument('-mode', type=str, default='FF',
+                        help='The instrument mode to use, can be FF or EFF')
+    parser.add_argument('-res_dir', type=str, default=os.getcwd(),
+                        help='The folder with the results')
+    args = parser.parse_args()
+    #
+    out = compare_before_after(args.start_rev,args.ccdnr,mode=args.mode,res_dir=args.res_dir)
 
+if __name__ == "__main__":
+    main()
